@@ -1,0 +1,146 @@
+<html>
+<head>
+	
+	<style>
+		html,body {
+			margin: 0px;
+			padding: 0px;
+			height: 100%;
+			overflow-y: hidden;
+			overflow-x: hidden;
+		}
+		.scribble-canvas {
+			z-index: 500;
+			position: absolute;
+			left: 0px;
+			top: 0px;
+		}
+		
+		.canvas-layer {
+			position: absolute;
+			left: 0px;
+			top: 0px;
+		}
+		
+		#controls {
+			position: fixed;
+			top: 10px;
+			left: 10px;
+			z-index: 999;
+		}
+		
+		#controls button {
+			float: left;
+			background-color: gray;
+		}
+		#controls button.active {
+			background-color: orange;
+		}
+		
+		
+		.overlay { 
+			position:absolute;
+			left: 0px;
+			top: 0px;
+			width: 1000px;
+			height: 500px;
+			z-index: 600;
+			font-size: 50px;
+			color: red;
+			text-align: center;
+			margin-top: 200px;
+		}
+		
+
+	
+	</style>
+
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+
+	<script>
+		// some initialization code
+		Systems = {};
+		Entities = {};
+		images = [];
+		
+	</script>
+	
+	<script src="util.js"></script>
+	
+	
+	<script src="systems/movement.js"></script>
+	<script src="systems/collisions.js"></script>
+	<script src="systems/rendering.js"></script>
+	
+	<script src="game.js"></script>
+	
+	<script src="entities/people.js"></script>
+	<script src="entities/buildings.js"></script>
+	
+	<script src="map.js"></script>
+	<script src="mapgen.js"></script>
+	<script src="lb.js"></script>
+
+	<script>
+	
+	$(function() {
+		game = new Game();
+		
+		$(window).resize(resizeGame);
+		
+		resizeGame();
+		
+		$('.again').click(function(e) {
+			e.preventDefault();
+			$('.overlay').hide();
+			
+			console.log('here');
+		
+			game.loop();
+		});
+		
+	});
+	
+	
+	function resizeGame() {
+		var w = $(window).width();
+		var h = $(window).height();
+		
+		
+		$('#tex-canvas')[0].width = w;
+		$('#tex-canvas')[0].height = h;
+		
+		$('#fixture-canvas')[0].width = w;
+		$('#fixture-canvas')[0].height = h;
+		
+		$('#entity-canvas')[0].width = w;
+		$('#entity-canvas')[0].height = h;
+		
+// 		var m = new Map();
+// 		m.render();
+// 		
+	}
+	
+
+	
+	
+	</script>
+	
+</head>
+<body>
+	<canvas width="300" height="300" id="tex-canvas" z-index="100" class="canvas-layer"></canvas>
+	<canvas width="300" height="300" id="fixture-canvas" z-index="110" class="canvas-layer"></canvas>
+	<canvas width="300" height="300" id="entity-canvas" z-index="200" class="canvas-layer"></canvas>
+	
+<!-- 	<canvas width="300" height="300" id="entity-canvas" z-index="200" class="canvas-layer"></canvas> -->
+	
+	
+	<div class="overlay intro" style="display:none">
+		Get ready to squeeze!
+		<br>
+		<button class="again">Play!</button>
+	</div>
+	
+	
+</body>
+
