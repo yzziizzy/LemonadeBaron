@@ -6,7 +6,7 @@ Systems.ai = Systems.ai || {};
 
 Systems.ai.followPaths = function() {
 
-	var comps = ['position', 'state'];
+	var comps = ['ai', 'position', 'state'];
 
 	runSystem(game.c, comps, function(ent, eid) {
 		

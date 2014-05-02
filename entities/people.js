@@ -24,6 +24,7 @@ Entities.susie = {
 
 Entities.customer1 = {
 	'collides': 1,
+	'ai': 1,
 	'aabb': {t:10/64, b: -10/64, l: -10/64, r: 10/64},
 	'position': {x: 123, y:126},
 	'nextpos': {x: 123, y:126},
