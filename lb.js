@@ -5,12 +5,12 @@
 
 people standing in line
 where for employees to stand
-street-walking logic
 thirst logic
 
 inventory screens
 store  screens
 
+quadtree for collisions
 
 
 
