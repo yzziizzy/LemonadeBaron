@@ -71,20 +71,30 @@
 	<script src="systems/movement.js"></script>
 	<script src="systems/collisions.js"></script>
 	<script src="systems/rendering.js"></script>
+	<script src="systems/hud.js"></script>
+	<script src="systems/ai.js"></script>
 	
 	<script src="game.js"></script>
 	
 	<script src="entities/people.js"></script>
 	<script src="entities/buildings.js"></script>
+	<script src="entities/organizations.js"></script>
 	
+	<script src="paths.js"></script>
 	<script src="map.js"></script>
 	<script src="mapgen.js"></script>
 	<script src="lb.js"></script>
 
 	<script>
+	var clayers = [];
+
 	
 	$(function() {
 		game = new Game();
+		
+		$('.canvas-layer').each(function() {
+			clayers.push(this);
+		});
 		
 		$(window).resize(resizeGame);
 		
@@ -93,8 +103,6 @@
 		$('.again').click(function(e) {
 			e.preventDefault();
 			$('.overlay').hide();
-			
-			console.log('here');
 		
 			game.loop();
 		});
@@ -102,19 +110,21 @@
 	});
 	
 	
+	
 	function resizeGame() {
 		var w = $(window).width();
 		var h = $(window).height();
 		
 		
-		$('#tex-canvas')[0].width = w;
-		$('#tex-canvas')[0].height = h;
+
 		
-		$('#fixture-canvas')[0].width = w;
-		$('#fixture-canvas')[0].height = h;
+		for(var i = 0; i < clayers.length; i++) {
 		
-		$('#entity-canvas')[0].width = w;
-		$('#entity-canvas')[0].height = h;
+			clayers[i].width = w;
+			clayers[i].height = h;
+		
+		}
+
 		
 // 		var m = new Map();
 // 		m.render();
@@ -132,7 +142,18 @@
 	<canvas width="300" height="300" id="fixture-canvas" z-index="110" class="canvas-layer"></canvas>
 	<canvas width="300" height="300" id="entity-canvas" z-index="200" class="canvas-layer"></canvas>
 	
-<!-- 	<canvas width="300" height="300" id="entity-canvas" z-index="200" class="canvas-layer"></canvas> -->
+ 	<canvas width="300" height="300" id="hud-canvas" z-index="300" class="canvas-layer"></canvas>
+	
+	
+	
+	<div class="menu inventory" style="display:block">
+		
+		
+		
+		
+		
+	</div>
+	
 	
 	
 	<div class="overlay intro" style="display:none">

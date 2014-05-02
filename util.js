@@ -1,7 +1,29 @@
  
 
- 
- 
+
+var min = Math.min;
+var max = Math.max;
+var abs = Math.abs;
+
+var sin = Math.sin;
+var cos = Math.cos;
+var tan = Math.tan;
+var asin = Math.asin;
+var acos = Math.acos;
+var atan = Math.atan;
+var atan2 = Math.atan2;
+
+var PI = Math.PI;
+var PI2 = Math.PI * 2;
+var PI3_2 = (3*Math.PI) / 2;
+var PI_2 = Math.PI / 2;
+var PI_4 = Math.PI / 4;
+
+
+function rand(min, max) {
+	return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 function pt(x,y) {
 	return {x: x, y: y};
 }
@@ -24,7 +46,9 @@ function intersectRect(a,b) {
 	return !(q || w || e || r);
 }
 
-
+function vecLen(x,y) {
+	return Math.sqrt(x*x + y*y);
+}
 
 function norm(x,y) {
 	var l = 1 / Math.sqrt(x*x + y*y);
@@ -39,6 +63,12 @@ function ptNorm(pt) {
 		x:pt.x * l,
 		y:pt.y * l
 	}
+}
+
+function vDist(a,b) {
+	var x = a.x - b.x;
+	var y = a.y - b.y;
+	return Math.sqrt(x*x + y*y);
 }
 
 

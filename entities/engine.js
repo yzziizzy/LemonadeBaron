@@ -1,0 +1,8 @@
+ 
+Entities.spawner = {
+	'spawns': ,
+	'template': {},
+	
+	
+	
+}

@@ -36,9 +36,17 @@ var Game = function(options) {
 		inputCache: {
 			pressed: {},
 			down: {},
-			clicked: {},
+			clicked: null,
 		},
 		
+		hudData: {
+			cash: {
+				pos: pt(35, 30),
+				font:  '24px Sans Serif',
+				color: 'yellow',
+			}
+		},
+				
 		map: null,
 		coll: null,
 		entities: [],
@@ -59,6 +67,8 @@ var Game = function(options) {
 		systems: {
 			
 		},
+		
+		aiPaths: new PathSet(),
 		
 		mapcounter: 0, 
 		
@@ -108,9 +118,8 @@ Game.prototype.init = function() {
 	*/	e.preventDefault();
 	});
 	$(document).mouseup(function(e) {
-	/*	that.inputCache.down[e.which] = 0;
-		that.inputCache.pressed[e.which] = (that.inputCache.pressed[e.which]>>>0) + 1;
-	*/	e.preventDefault();
+		that.inputCache.clicked = that.map.documentToMap(e.pageX, e.pageY);
+		e.preventDefault();
 	});
 	
 	// need double clicks 
@@ -123,6 +132,12 @@ Game.prototype.init = function() {
 	this.actorCtx = this.actorCanvas.getContext("2d");
 	this.actorCtx.setTransform(1, 0, 0, 1, 0, 0);
 	
+	
+	// canvas for HUD
+	this.hudCanvas = $('#hud-canvas')[0];
+	this.hudCtx = this.hudCanvas.getContext("2d");
+	this.hudCtx.setTransform(1, 0, 0, 1, 0, 0);
+	
 	// set up the map
 	this.map = new Map({
 		canvasSelector: '#tex-canvas',
@@ -130,7 +145,7 @@ Game.prototype.init = function() {
 	});
 	
 	// generate the map
-	MapGen_1(this.map);
+	MapGen_1(this.map, this);
 	
 	
 	this.systems = Systems;
@@ -138,7 +153,16 @@ Game.prototype.init = function() {
 	// add some content...
 	
 	this.spawn(Entities.susie);
-	this.spawn(Entities.susieshouse);
+	this.spawn(Entities.stand);
+	
+	var cust = this.spawn(Entities.customer1);
+	//this.addComponent(cust, 'goTo', pt(132,129));
+	this.setComp(cust, 'position', pt(119,126));
+	this.addComponent(cust, 'followPaths', 1);
+	
+	
+	
+	this.spawn(Entities.baron);
 	
 	console.log('game init completed');
 	// eh... 
@@ -181,6 +205,9 @@ Game.prototype.render = function() {
 	);
 	
 	
+	this.systems.hud.money();
+
+	
 };
 
 
@@ -194,7 +221,7 @@ Game.prototype.updateInput = function() {
 	};
 	
 	this.inputCache.pressed = {};
-	this.inputCache.clicked = {};
+	this.inputCache.clicked = null;
 	
 	this.input = curinput;
 };
@@ -249,13 +276,22 @@ Game.prototype.updateGame = function(te) {
 // this is for things that need reasonable integration like physics
 Game.prototype.step = function(te) {
 	
-	this.systems.move(te);
+	//this.systems.move(te);
+	
+	this.systems.goTo();
+	
+	
+	this.systems.acceleration(te);
+	this.systems.velocity(te);
+	
 	this.systems.urge(te);
 	
 	
 	
 	this.systems.checkCollisions();
 	
+	// the odometer must be called immediately before movement finalization
+	this.systems.odometer();
 	this.systems.finalizeMove();
 	
 	
@@ -265,12 +301,14 @@ Game.prototype.step = function(te) {
 Game.prototype.frameStep = function(te) {
 	
 	this.systems.mapFollows(); 
+	this.systems.lookAt();
 	
 };
 
 // called ~ once every second. useful for game logic, etc
 Game.prototype.secondStep = function(te) {
 	
+	this.systems.ai.followPaths();
 };
 
 
@@ -343,9 +381,9 @@ function runSystem(allComps, reqComps, cb){
 	for(var eid in allComps[reqComps[0]]) {
 		var go = true;
 		var e = {};
-		for(var i = 1; i < len; i++) {
+		for(var i = 0; i < len; i++) {
 			var cn = reqComps[i];
-			if(!allComps[cn].hasOwnProperty(eid)) {
+			if(!allComps[cn] || !allComps[cn].hasOwnProperty(eid)) {
 				go = false;
 				break;
 			}
@@ -353,7 +391,7 @@ function runSystem(allComps, reqComps, cb){
 			e[cn] = allComps[cn][eid]
 		}
 		
-		if(go) cb(e);
+		if(go) cb(e, eid);
 	}
 }
 

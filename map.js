@@ -10,6 +10,12 @@ var Map = function(options) {
 		context: null,
 		showDebugLabels: false,
 		prevCenter: {x: 0, y: 0},
+		
+		texCodes: null,
+		
+		nameToCode: {},
+		images: {},
+		
 	};
 	
 	var e = $.extend({}, defaults, options);
@@ -29,6 +35,15 @@ Map.prototype.init = function() {
 	this.context = this.canvas.getContext("2d");
 	this.context.setTransform(1, 0, 0, 1, 0, 0);
 	
+	
+	// temporary hacks
+	this.images[0] = images.debug_grass;
+	this.images[1] = images.debug_road;
+	this.images[2] = images.debug_sidewalk;
+	
+	this.nameToCode['grass'] = 0;
+	this.nameToCode['road'] = 1;
+	this.nameToCode['sidewalk'] = 2;
 }
 
 Map.prototype.getEdges = function(center) {
@@ -47,7 +62,10 @@ Map.prototype.getEdges = function(center) {
 
 Map.prototype.getTileAt = function(x,y) {
 	// temp hack
-	return images.debug_grass;
+	if(x < 0 || y < 0 || x > this.size.x || y > this.size.y)
+		return images.debug_grass;
+	
+	return this.images[this.texCodes[x + (y * this.size.x)]];
 }
 
 
@@ -71,6 +89,16 @@ Map.prototype.mapToCanvas = function(center, mx, my) {
 	
 }
 
+// converts HTML document coordinates to map coordinates
+Map.prototype.documentToMap = function(docX, docY) {
+	var cwidth = this.canvas.width / 128;
+	var cheight = this.canvas.height / 128;
+	
+	return pt(
+		this.prevCenter.x - cwidth + docX/64,
+		this.prevCenter.y + cheight - docY/64
+	);
+}
 
 // remember y is inverted and the whole thing is scaled by 64
 //center is in world coordinates
@@ -144,9 +172,32 @@ Map.prototype.render = function(center) {
 
 
 
+Map.prototype.setTexAt = function(x, y, name) {
+	
+	if(x < 0 || y < 0 || x > this.size.x || y > this.size.y) return null;
+	
+	var old = this.nameToCode.indexOf(this.texCodes[x + (y * this.size.x)]);
+	this.texCodes[x + (y * this.size.x)] = this.nameToCode[name];
+	
+	return old;
+}
 
 
-
-
-
+Map.prototype.fillRectTex = function(x1, y1, x2, y2, name) {
+	
+	var xmin = max(min(x1, x2), 0);
+	var xmax = min(max(x1, x2), this.size.x);
+	var ymin = max(min(y1, y2), 0);
+	var ymax = min(max(y1, y2), this.size.y);
+	
+	var code = this.nameToCode[name];
+	
+	for(var y = ymin; y <= ymax; y++) {
+		for(var x = xmin; x <= xmax; x++) {
+			this.texCodes[x + (y * this.size.x)] = code;
+		}
+	}
+	
+	
+}
 

@@ -3,7 +3,13 @@
 
 /*
 
-map scrolling needed....
+people standing in line
+where for employees to stand
+street-walking logic
+thirst logic
+
+inventory screens
+store  screens
 
 
 
@@ -12,6 +18,12 @@ map scrolling needed....
 assets needed:
 	grass texture
 	dirt texture
+	gravel texture
+	sidewalk textures
+	road textures
+	alley textures
+	stands
+	houses
 
 
 */
@@ -35,8 +47,11 @@ window.requestAnimFrame = (function(){
 // asset loading
 var img_to_load = {
 	debug_grass: 'textures/ground/debug-grass.png',
+	debug_road: 'textures/ground/debug_road.png',
+	debug_sidewalk: 'textures/ground/debug_sidewalk.png',
 	susie: 'textures/susie.png',
 	susieshouse: 'textures/susieshouse.png',
+	stand: 'textures/debug_stand.png',
 }
 var images = {};
 
