@@ -27,6 +27,9 @@ var MapGen_1 =  function(map, game) {
 	game.aiPaths.addEdge(n4, n1, true);
 	
 	
+	renderToTexmap();
+	
+	
 	
 	function genblock(target) {
 	
@@ -36,14 +39,110 @@ var MapGen_1 =  function(map, game) {
 		game.setComp(house, 'position', {x: target.x, y: target.y });
 		
 		
-		map.fillRectTex(target.x - 7, target.y - 7, target.x + 7, target.y + 7, 'road');
-		map.fillRectTex(target.x - 5, target.y - 5, target.x + 5, target.y + 5, 'sidewalk');
-		map.fillRectTex(target.x - 4, target.y - 4, target.x + 4, target.y + 4, 'grass');
+		map.fillRectLay(target.x - 6, target.y - 6, target.x + 6, target.y + 6, 'road');
+		map.fillRectLay(target.x - 5, target.y - 5, target.x + 5, target.y + 5, 'sidewalk');
+		map.fillRectLay(target.x - 4, target.y - 4, target.x + 4, target.y + 4, 'grass');
+		
+	//	map.andLayAt(121, 127, 'sidewalk'); 
+		map.orLayAt(target.x - 5, target.y + 6, 'sidewalk'); 
+		map.orLayAt(target.x + 5, target.y + 6, 'sidewalk'); 
+		map.orLayAt(target.x - 6, target.y + 5, 'sidewalk'); 
+		map.orLayAt(target.x + 6, target.y + 5, 'sidewalk'); 
+		map.orLayAt(target.x - 5, target.y - 6, 'sidewalk'); 
+		map.orLayAt(target.x + 5, target.y - 6, 'sidewalk'); 
+		map.orLayAt(target.x - 6, target.y - 5, 'sidewalk'); 
+		map.orLayAt(target.x + 6, target.y - 5, 'sidewalk'); 
 		
 		
 	}
 	
 	
+	
+	function above(x,y) {
+		if(y >= map.size.y - 1) return -1;
+		return x + (y+1)* map.size.x;
+	}
+	function below(x,y) {
+		if(y <= 0) return -1;
+		return x + (y-1)* map.size.x;
+	}
+	function right(x,y) {
+		if(x >= map.size.x - 1) return -1;
+		return (x+1) + y * map.size.x;
+	}
+	function left(x,y) {
+		if(x <= 0) return -1;
+		return (x-1) + y * map.size.x;
+	}
+	
+	function isAbove(x, y, t) {
+		if(y >= map.size.y - 1) return 0;
+		return map.layout[x + (y+1)* map.size.x] & t ? 1 : 0;
+	}
+	function isBelow(x, y, t) {
+		if(y <= 0) return 0;
+		return map.layout[x + (y-1)* map.size.x] & t ? 1 : 0;
+	}
+	function isRight(x, y, t) {
+		if(x >= map.size.x - 1) return 0;
+		return (map.layout[(x+1) + y * map.size.x]|0) & (t|0) ? 1 : 0;
+	}
+	function isLeft(x, y, t) {
+		if(x <= 0) return 0;
+		return map.layout[(x-1) + y * map.size.x] & t ? 1 : 0;
+	}
+	
+	function getAt(x, y) {
+		return map.layout[x + y * map.size.x];
+	}
+	
+	
+	
+	
+	function resolveTile(x, y) {
+		
+		var t = getAt(x, y);
+		
+		var tinfo = map.texLayMapping[map.layoutCodes_inv[t]];
+		
+		// return out on simple textures
+		if(typeof tinfo == 'string') {
+			return map.texImgMapping_inv[tinfo];// the tex code for the string name
+		}
+		
+		// fancy directional tiles like sidewalks
+		if(tinfo.type == 'directional') {
+			var N = isAbove(x, y, t),
+				S = isBelow(x, y, t),
+				E = isRight(x, y, t),
+				W = isLeft(x, y, t);
+			
+			var suffix = N + '' + S + '' + E + '' + W;
+			
+			return map.texImgMapping_inv[tinfo.prefix + '' + suffix];
+		}
+		
+		
+		
+	}
+	
+	
+	
+	
+	function renderToTexmap() {
+		for(var y = 0; y < map.size.y; y++) {
+			for(var x = 0; x < map.size.x; x++) {
+				
+				
+				map.texCodes[x + y * map.size.x] = resolveTile(x, y);
+			}
+		}
+		
+		
+		
+		
+		
+	}
 	
 	
 }

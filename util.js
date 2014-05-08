@@ -37,11 +37,20 @@ function rectc(r) {
 	return {t: r.t, b: r.b, l: r.l, r: r.r};
 }
 
+function translateRect(r, p) {
+	return {
+		t: r.t + p.y,
+		b: r.b + p.y,
+		l: r.l + p.x,
+		r: r.r + p.x
+	}
+}
+
 
 function intersectRect(a,b) { 
-	var q = a.l > b.r ,
-		w = a.r < b.l ,
-		e = a.t < b.b ,
+	var q = a.l > b.r,
+		w = a.r < b.l,
+		e = a.t < b.b,
 		r = a.b > b.t; 
 	return !(q || w || e || r);
 }
@@ -71,8 +80,34 @@ function vDist(a,b) {
 	return Math.sqrt(x*x + y*y);
 }
 
+function circleIntersect(a, ar, b, br) {
+	var x = a.x - b.x;
+	var y = a.y - b.y;
+	return x*x + y*y <= (ar+br) * (ar+br);
+}
+
 
 function exec(fn) { return fn() };
+
+
+function inverse(obj) {
+	var inv = {};
+	
+	for(var k in obj) {
+		if(obj.hasOwnProperty(k)) {
+			inv[obj[k]] = k;
+		}
+	}
+	
+	return inv;
+}
+
+
+
+
+
+
+
 
 
 

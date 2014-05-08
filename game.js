@@ -31,6 +31,7 @@ var Game = function(options) {
 		
 		maxStep: .01,
 		secondAcc: 0,
+		gameTime: 0,
 		
 		input: {},
 		inputCache: {
@@ -101,11 +102,13 @@ Game.prototype.init = function() {
 	
 	// input handlers
 	$(document).keydown(function(e) {
+		if(!that.runGame) return;
 		that.inputCache.down[e.which] = 1;
 		that.inputCache.down[e.which] |= 0;
 		e.preventDefault();
 	});
 	$(document).keyup(function(e) {
+		if(!that.runGame) return;
 		that.inputCache.down[e.which] = 0;
 		that.inputCache.pressed[e.which] = (that.inputCache.pressed[e.which]>>>0) + 1;
 		e.preventDefault();
@@ -113,11 +116,13 @@ Game.prototype.init = function() {
 	
 	// need to fix this
 	$(document).mousedown(function(e) {
+		if(!that.runGame) return;
 	/*	that.inputCache.down[e.which] = 1;
 		that.inputCache.down[e.which] |= 0;
 	*/	e.preventDefault();
 	});
 	$(document).mouseup(function(e) {
+		if(!that.runGame) return;
 		that.inputCache.clicked = that.map.documentToMap(e.pageX, e.pageY);
 		e.preventDefault();
 	});
@@ -155,11 +160,9 @@ Game.prototype.init = function() {
 	this.spawn(Entities.susie);
 	this.spawn(Entities.stand);
 	
-	var cust = this.spawn(Entities.customer1);
-	//this.addComponent(cust, 'goTo', pt(132,129));
-	this.setComp(cust, 'position', pt(119,126));
-	this.addComponent(cust, 'followPaths', 1);
-	
+
+	this.spawnCustomer(pt(129,126));
+	this.spawnCustomer(pt(119,126));
 	
 	
 	this.spawn(Entities.baron);
@@ -255,8 +258,10 @@ Game.prototype.updateGame = function(te) {
 	
 	// nice little physics steps
 	for(var i = 0; i < steps; i++) {
+		this.gameTime += this.maxStep;
 		this.step(this.maxStep);
 	}
+	this.gameTime += leftover;
 	this.step(leftover);
 	
 	// once per frame
@@ -365,7 +370,12 @@ Game.prototype.spawn = function(entity) {
 	var eid = this.addEntity();
 	
 	for(var prop in entity) { if(entity.hasOwnProperty(prop)) {
-		this.addComponent(eid, prop, entity[prop]);
+		var data = entity[prop];
+		// fuck references. real languages use pointers.
+		if(typeof data == 'object')
+			data = $.extend({}, data);
+		
+		this.addComponent(eid, prop, data);
 	}}
 	
 	return eid;
@@ -397,4 +407,15 @@ function runSystem(allComps, reqComps, cb){
 
 
 
+
+
+
+Game.prototype.spawnCustomer = function(pos) {
+	
+	var eid = this.spawn(Entities.customer1);
+	this.setComp(eid, 'position', ptc(pos));
+	this.addComponent(eid, 'followPaths', 1);
+	
+	return eid;
+}
 

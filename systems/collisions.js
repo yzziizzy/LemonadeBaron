@@ -1,9 +1,13 @@
- 
+
+
+
+
 Systems.checkCollisions = function() {
 	
 	var colliders = game.components.collides;
 	var collidees = game.components.collidable;
 	
+	// old ugly way... need to update
 	for(var eid in colliders) { if(colliders.hasOwnProperty(eid)) {
 		
 		var oldpos = game.getComp(eid, 'position');
@@ -41,7 +45,5 @@ Systems.checkCollisions = function() {
 		}}
 		
 	}}
-	
-	
 	
 }

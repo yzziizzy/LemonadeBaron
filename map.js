@@ -1,6 +1,10 @@
 
 
 
+
+
+
+
 var Map = function(options) {
 	
 	var defaults = {
@@ -12,6 +16,7 @@ var Map = function(options) {
 		prevCenter: {x: 0, y: 0},
 		
 		texCodes: null,
+		layout: null,
 		
 		nameToCode: {},
 		images: {},
@@ -29,6 +34,7 @@ Map.prototype.init = function() {
 	
 	// initialize the storage
 	this.texCodes = new Uint8Array(this.size.x * this.size.y);
+	this.layout = new Uint16Array(this.size.x * this.size.y);
 	
 	
 	this.canvas = $(this.canvasSelector)[0];
@@ -37,13 +43,70 @@ Map.prototype.init = function() {
 	
 	
 	// temporary hacks
-	this.images[0] = images.debug_grass;
-	this.images[1] = images.debug_road;
-	this.images[2] = images.debug_sidewalk;
+	this.texImgMapping = {
+		 0: 'grass',
+		 1: 'road',
+		 2: 'sidewalk_0000',
+		 3: 'sidewalk_0001',
+		 4: 'sidewalk_0010',
+		 5: 'sidewalk_0011',
+		 6: 'sidewalk_0100',
+		 7: 'sidewalk_0101',
+		 8: 'sidewalk_0110',
+		 9: 'sidewalk_0111',
+		10: 'sidewalk_1000',
+		11: 'sidewalk_1001',
+		12: 'sidewalk_1010',
+		13: 'sidewalk_1011',
+		14: 'sidewalk_1100',
+		15: 'sidewalk_1101',
+		16: 'sidewalk_1110',
+		17: 'sidewalk_1111',
+// 		18: '',
+// 		19: '',
+// 		20: '',
+// 		21: '',
+// 		22: '',
+// 		23: '',
+// 		24: '',
+// 		25: '',
+// 		26: '',
+// 		27: '',
+// 		28: '',
+// 		29: '',
+	};
 	
-	this.nameToCode['grass'] = 0;
-	this.nameToCode['road'] = 1;
-	this.nameToCode['sidewalk'] = 2;
+	this.texImgMapping_inv = inverse(this.texImgMapping);
+	
+// 	this.images[0] = images.grass;
+// 	this.images[1] = images.debug_road;
+// 	this.images[2] = images.debug_sidewalk;
+// 	this.nameToCode['grass'] = 0;
+// 	this.nameToCode['road'] = 1;
+// 	this.nameToCode['sidewalk'] = 2;
+	
+	
+	this.texLayMapping = {
+		grass: 'grass',
+		road: 'road',
+		sidewalk: {
+			type: 'directional',
+			prefix: 'sidewalk_',
+		},
+		
+	};
+	
+	
+	// eventually this will be a bit field
+	this.layoutCodes = {
+		grass: 0,
+		road: 1,
+		sidewalk: 2,
+		walkingpath: 4,
+	}
+	
+	this.layoutCodes_inv = inverse(this.layoutCodes);
+	this.layoutCodes_inv[3] = 'road';
 }
 
 Map.prototype.getEdges = function(center) {
@@ -65,7 +128,11 @@ Map.prototype.getTileAt = function(x,y) {
 	if(x < 0 || y < 0 || x > this.size.x || y > this.size.y)
 		return images.debug_grass;
 	
-	return this.images[this.texCodes[x + (y * this.size.x)]];
+//	return this.images[this.texCodes[x + (y * this.size.x)]];
+	var tc = this.texCodes[x + (y * this.size.x)];
+	var img = this.texImgMapping[tc]
+	
+	return images[img];
 }
 
 
@@ -200,4 +267,49 @@ Map.prototype.fillRectTex = function(x1, y1, x2, y2, name) {
 	
 	
 }
+
+
+
+
+
+Map.prototype.setLayAt = function(x, y, name) {
+	
+	if(x < 0 || y < 0 || x > this.size.x || y > this.size.y) return null;
+	
+	var old = this.layout[x + (y * this.size.x)];
+	this.layout[x + (y * this.size.x)] = this.layoutCodes[name];
+	
+	return old;
+}
+
+Map.prototype.orLayAt = function(x, y, name) {
+	
+	if(x < 0 || y < 0 || x > this.size.x || y > this.size.y) return null;
+	
+	var old = this.layout[x + (y * this.size.x)];
+	this.layout[x + (y * this.size.x)] = old | this.layoutCodes[name];
+	
+	return old;
+}
+
+
+Map.prototype.fillRectLay = function(x1, y1, x2, y2, name) {
+	
+	var xmin = max(min(x1, x2), 0);
+	var xmax = min(max(x1, x2), this.size.x);
+	var ymin = max(min(y1, y2), 0);
+	var ymax = min(max(y1, y2), this.size.y);
+	
+	var code = this.layoutCodes[name];
+	
+	for(var y = ymin; y <= ymax; y++) {
+		for(var x = xmin; x <= xmax; x++) {
+			this.layout[x + (y * this.size.x)] = code;
+		}
+	}
+	
+	
+}
+
+
 

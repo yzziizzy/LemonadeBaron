@@ -40,23 +40,23 @@ Systems.drawActors = function(ctx, view, center) {
 
 
 
-
-Systems.move = function(te) {
-	//return;
-	var movers = game.components.velocity;
-	
-	for(var eid in movers) { if(movers.hasOwnProperty(eid)) { var vel = movers[eid];
-		
-		var oldpos = game.getComp(eid, 'position');
-		var nextpos = game.getComp(eid, 'nextpos');
-		
-		// references...
-		nextpos.x = oldpos.x + vel.x * te; 
-		nextpos.y = oldpos.y + vel.y * te; 
-	}};
-	
-	
-}
+// dead code
+// Systems.move = function(te) {
+// 	//return;
+// 	var movers = game.components.velocity;
+// 	
+// 	for(var eid in movers) { if(movers.hasOwnProperty(eid)) { var vel = movers[eid];
+// 		
+// 		var oldpos = game.getComp(eid, 'position');
+// 		var nextpos = game.getComp(eid, 'nextpos');
+// 		
+// 		// references...
+// 		nextpos.x = oldpos.x + vel.x * te; 
+// 		nextpos.y = oldpos.y + vel.y * te; 
+// 	}};
+// 	
+// 	
+// }
 
 Systems.finalizeMove = function(te) {
 	//return;

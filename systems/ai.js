@@ -37,7 +37,17 @@ Systems.ai.followPaths = function() {
 
 Systems.ai.thirst = function() {
 	
-	
+	var comps = ['thirst', 'odometer'];
+
+	runSystem(game.c, comps, function(ent, eid) {
+		
+		var t = ent.odometer.lastDrink || 0;
+		
+		game.setComp(eid, 'thirst', t > 50);
+		
+		ent.odometer.lastDrink = t;
+		
+	});
 	
 	
 }

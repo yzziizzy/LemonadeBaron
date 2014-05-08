@@ -12,6 +12,9 @@ store  screens
 
 quadtree for collisions
 
+framerate throttle
+
+thought bubbles?
 
 
 
@@ -46,9 +49,27 @@ window.requestAnimFrame = (function(){
 
 // asset loading
 var img_to_load = {
+	grass: 'textures/ground/grass.png',
 	debug_grass: 'textures/ground/debug-grass.png',
+	road: 'textures/ground/debug_road.png',
 	debug_road: 'textures/ground/debug_road.png',
-	debug_sidewalk: 'textures/ground/debug_sidewalk.png',
+	debug_sidewalk: 'textures/ground/sidewalk_0101.png',
+ 	sidewalk_0000: 'textures/ground/sidewalk_0000.png',
+ 	sidewalk_0001: 'textures/ground/sidewalk_0001.png',
+ 	sidewalk_0010: 'textures/ground/sidewalk_0010.png',
+ 	sidewalk_0011: 'textures/ground/sidewalk_0011.png',
+ 	sidewalk_0100: 'textures/ground/sidewalk_0100.png',
+ 	sidewalk_0101: 'textures/ground/sidewalk_0101.png',
+ 	sidewalk_0110: 'textures/ground/sidewalk_0110.png',
+ 	sidewalk_0111: 'textures/ground/sidewalk_0111.png',
+ 	sidewalk_1000: 'textures/ground/sidewalk_1000.png',
+ 	sidewalk_1001: 'textures/ground/sidewalk_1001.png',
+ 	sidewalk_1010: 'textures/ground/sidewalk_1010.png',
+ 	sidewalk_1011: 'textures/ground/sidewalk_1011.png',
+ 	sidewalk_1100: 'textures/ground/sidewalk_1100.png',
+ 	sidewalk_1101: 'textures/ground/sidewalk_1101.png',
+ 	sidewalk_1110: 'textures/ground/sidewalk_1110.png',
+ 	sidewalk_1111: 'textures/ground/sidewalk_1111.png',
 	susie: 'textures/susie.png',
 	susieshouse: 'textures/susieshouse.png',
 	stand: 'textures/debug_stand.png',
