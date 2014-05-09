@@ -152,15 +152,19 @@ Game.prototype.init = function() {
 	// generate the map
 	MapGen_1(this.map, this);
 	
+	this.grid = new GridSP();
 	
 	this.systems = Systems;
 	
 	// add some content...
 	
 	this.spawn(Entities.susie);
-	this.spawn(Entities.stand);
+	var stand = this.spawn(Entities.stand);
+	setTimeout(function() {
+		that.grid.addObj(stand);
+	}, 1);
 	
-
+	
 	this.spawnCustomer(pt(129,126));
 	this.spawnCustomer(pt(119,126));
 	
@@ -313,6 +317,9 @@ Game.prototype.frameStep = function(te) {
 // called ~ once every second. useful for game logic, etc
 Game.prototype.secondStep = function(te) {
 	
+	this.systems.ai.thirst();
+	this.systems.ai.thirsty_LocateStand();
+	this.systems.ai.buyDrink();
 	this.systems.ai.followPaths();
 };
 
@@ -327,7 +334,12 @@ Game.prototype.addEntity = function() {
 	return i;
 };
 
-
+Game.prototype.firstEntityWith = function(comp) {
+	var c = this.components[comp];
+	if(!c) return null;
+	
+	for(var eid in c) return eid;
+};
 
 Game.prototype.getAllComponents = function(eid) {
 	
@@ -363,6 +375,9 @@ Game.prototype.setComp = function(eid, name, data) {
 
 Game.prototype.getComp = function(eid, name) {
 	return this.components[name] ? this.components[name][eid] : null;
+};
+Game.prototype.removeComp = function(eid, name) {
+	delete this.components[name][eid];
 };
 
 

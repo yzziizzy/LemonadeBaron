@@ -15,6 +15,7 @@ Entities.stand = {
 	'collidable': 1,
 	'sells': ['lemonade'],
 	'prices': { lemonade: 1.5 },
+	'inventory': {lemonade: 4},
 	
 	'serviceLines': [pt(0, 25/60)],
 	

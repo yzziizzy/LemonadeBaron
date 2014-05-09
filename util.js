@@ -4,6 +4,8 @@
 var min = Math.min;
 var max = Math.max;
 var abs = Math.abs;
+var floor = Math.floor;
+var ceil = Math.ceil;
 
 var sin = Math.sin;
 var cos = Math.cos;

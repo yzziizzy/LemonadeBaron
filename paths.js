@@ -3,11 +3,11 @@ var PathSet = function(options) {
 	
 	var defaults = {
 		nodes: [],
-		edges: {}, // indexed by "from" node
+		edges: Object.create(null), // indexed by "from" node
 		
 		
-		nodeTypes: {},
-		nodeRefs: {},
+		nodeTypes: Object.create(null),
+		nodeRefs: Object.create(null),
 		
 		nodeMatchEpsilon: .5,
 	};
@@ -70,6 +70,8 @@ PathSet.prototype.addNodeIntoEdge = function(pos, type, ref) {
 	var n = this.addNode(pos, type, ref);
 	
 	// check all paths
+	
+	
 	
 	
 	

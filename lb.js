@@ -3,6 +3,12 @@
 
 /*
 
+proper game init and run states
+add houses to grid
+update collisions to use grid
+
+figure out something with the paths
+
 people standing in line
 where for employees to stand
 thirst logic

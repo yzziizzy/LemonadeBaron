@@ -79,8 +79,8 @@ GridSP.prototype.insert = function(rect, p, eid) {
 	
 	var l = [];
 	
-	for(var y = miny; y <= ymax; y++) {
-		for(var x = minx; x <= xmax; x++) {
+	for(var y = miny; y <= maxy; y++) {
+		for(var x = minx; x <= maxx; x++) {
 			var i = x + y * this.gridSize.x;
 			
 			this.points[i][eid] = p;
@@ -95,18 +95,18 @@ GridSP.prototype.insert = function(rect, p, eid) {
 
 
 // center to center, for things that are small enough for the bounds to not matter
-Grid.prototype.rangeRadiusFast = function(rad, qp) {
+GridSP.prototype.rangeRadiusFast = function(qp, rad) {
 	
 	// FIXME: min/max tests for edges
-	var minx = floor(qp.x - rad this.cellSize);
-	var maxx = ceil(qp.x + rad / this.cellSize);
-	var miny = floor(qp.y - rad / this.cellSize);
-	var maxy = ceil(qp.y + rad / this.cellSize);
+	var minx = floor((qp.x - rad) / this.cellSize);
+	var maxx = ceil((qp.x + rad) / this.cellSize);
+	var miny = floor((qp.y - rad) / this.cellSize);
+	var maxy = ceil((qp.y + rad) / this.cellSize);
 	
 	var l = [];
 	
-	for(var y = miny; y <= ymax; y++) {
-		for(var x = minx; x <= xmax; x++) {
+	for(var y = miny; y <= maxy; y++) {
+		for(var x = minx; x <= maxx; x++) {
 			var i = x + y * this.gridSize.x;
 			
 			for(eid in this.points[i]) {
@@ -123,7 +123,7 @@ Grid.prototype.rangeRadiusFast = function(rad, qp) {
 
 
 // this one runs as a system
-Grid.prototype.updatePositions = function() {
+GridSP.prototype.updatePositions = function() {
 	
 	var comps = ['position', 'nextpos'];
 	

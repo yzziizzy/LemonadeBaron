@@ -32,7 +32,7 @@ Entities.customer1 = {
 	'acceleration': {x: 0, y:0},
 	'maxSpeed': 1,
 	'state': {loco: 'standing'},
-	'thirst': 0,
+	'thirst': 49,
 	'movable': {pos: {x:126,y:126}, vel:{x:0,y:0}, acc:{x:0,y:0}},
 	'urge': {x: 0, y:0, acc: 0, drag: 1000},
 	'lookAt': 'velocity',
