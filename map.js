@@ -1,5 +1,9 @@
 
-
+var TILE_PASSABLE  = 0x0001,
+	TILE_DRIVEABLE = 0x0002,
+	TILE_WALKPATH  = 0x0004,
+	TILE_BUILDABLE = 0x0008;
+	
 
 
 
@@ -35,6 +39,8 @@ Map.prototype.init = function() {
 	// initialize the storage
 	this.texCodes = new Uint8Array(this.size.x * this.size.y);
 	this.layout = new Uint16Array(this.size.x * this.size.y);
+	
+	this.tileInfo = new Uint8Array(this.size.x * this.size.y);
 	
 	
 	this.canvas = $(this.canvasSelector)[0];
@@ -237,8 +243,6 @@ Map.prototype.render = function(center) {
 
 
 
-
-
 Map.prototype.setTexAt = function(x, y, name) {
 	
 	if(x < 0 || y < 0 || x > this.size.x || y > this.size.y) return null;
@@ -305,6 +309,51 @@ Map.prototype.fillRectLay = function(x1, y1, x2, y2, name) {
 	for(var y = ymin; y <= ymax; y++) {
 		for(var x = xmin; x <= xmax; x++) {
 			this.layout[x + (y * this.size.x)] = code;
+		}
+	}
+	
+	
+}
+
+
+
+// these set bits
+
+Map.prototype.setInfoAt = function(x, y, mask, op) {
+	
+	if(x < 0 || y < 0 || x > this.size.x || y > this.size.y) return null;
+	
+	if(op == '|') // sets bits
+		this.tileInfo[x + (y * this.size.x)] |= mask;
+	else if(op == '&') // clears all other bits
+		this.tileInfo[x + (y * this.size.x)] &= mask;
+	else if(op == '!') // clears selected bits
+		this.tileInfo[x + (y * this.size.x)] &= !mask;
+	else if(op == '^') // why not?
+		this.tileInfo[x + (y * this.size.x)] ^= mask;
+	
+	
+	return true;
+}
+
+
+Map.prototype.fillRectInfo = function(x1, y1, x2, y2, mask, op) {
+	
+	var xmin = max(min(x1, x2), 0);
+	var xmax = min(max(x1, x2), this.size.x);
+	var ymin = max(min(y1, y2), 0);
+	var ymax = min(max(y1, y2), this.size.y);
+	
+	for(var y = ymin; y <= ymax; y++) {
+		for(var x = xmin; x <= xmax; x++) {
+			if(op == '|') // sets bits
+				this.tileInfo[x + (y * this.size.x)] |= mask;
+			else if(op == '&') // clears all other bits
+				this.tileInfo[x + (y * this.size.x)] &= mask;
+			else if(op == '!') // clears selected bits
+				this.tileInfo[x + (y * this.size.x)] &= !mask;
+			else if(op == '^') // why not?
+				this.tileInfo[x + (y * this.size.x)] ^= mask;
 		}
 	}
 	

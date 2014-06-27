@@ -131,7 +131,7 @@ GridSP.prototype.updatePositions = function() {
 		
 		// there should be some extra cleverness in this function. simplicity for now.
 		
-		
+		// nothing in the grid actually moves atm
 		
 		
 	});

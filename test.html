@@ -67,6 +67,7 @@
 	
 	<script src="util.js"></script>
 	
+<!-- 	<script src="behaviortree.js"></script> -->
 	
 	<script src="systems/movement.js"></script>
 	<script src="systems/collisions.js"></script>
@@ -104,7 +105,8 @@
 		$('.again').click(function(e) {
 			e.preventDefault();
 			$('.overlay').hide();
-		
+			
+			game.loadLevel();
 			game.loop();
 		});
 		

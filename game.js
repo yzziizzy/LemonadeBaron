@@ -149,8 +149,6 @@ Game.prototype.init = function() {
 		showDebugLabels: true,
 	});
 	
-	// generate the map
-	MapGen_1(this.map, this);
 	
 	this.grid = new GridSP();
 	
@@ -158,18 +156,15 @@ Game.prototype.init = function() {
 	
 	// add some content...
 	
-	this.spawn(Entities.susie);
-	var stand = this.spawn(Entities.stand);
-	setTimeout(function() {
-		that.grid.addObj(stand);
-	}, 1);
+/*	
+	var b = this.aibtree = new BehaviorTree();
+	
+	b.addRoot({type: 'priority');
 	
 	
-	this.spawnCustomer(pt(129,126));
-	this.spawnCustomer(pt(119,126));
 	
-	
-	this.spawn(Entities.baron);
+	*/
+
 	
 	console.log('game init completed');
 	// eh... 
@@ -190,6 +185,28 @@ Game.prototype.loop = function() {
 	
 	
 	if(this.runGame) window.requestAnimFrame(this.animFrame);
+};
+
+
+Game.prototype.loadLevel = function() {
+	
+	// generate the map
+	MapGen_1(this.map, this);
+	
+	
+	
+	this.spawn(Entities.susie);
+	var stand = this.spawn(Entities.stand);
+	this.grid.addObj(stand);
+	
+	
+	this.spawnCustomer(pt(129,126));
+	this.spawnCustomer(pt(119,126));
+	
+	
+	this.spawn(Entities.baron);
+	
+	
 };
 
 
