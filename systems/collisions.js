@@ -2,6 +2,10 @@
 
 
 
+// all this shit has to change to handle the tile-based approach
+
+
+
 Systems.checkCollisions = function() {
 	
 	var colliders = game.components.collides;

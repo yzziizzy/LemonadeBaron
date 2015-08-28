@@ -69,6 +69,10 @@ var Game = function(options) {
 			
 		},
 		
+		disabledSystems: {
+			
+		},
+		
 		aiPaths: new PathSet(),
 		
 		mapcounter: 0, 
@@ -414,6 +418,14 @@ Game.prototype.spawn = function(entity) {
 }
 
 
+// first arg is system name. rest of args are passed through
+Game.prototype.trySystem = function() {
+	var name = arguments.unshift();
+	
+	if(this.disabledSystems) return null;
+	
+	return this.systems[name].apply(this, arguments);
+};
 
 
 function runSystem(allComps, reqComps, cb){
