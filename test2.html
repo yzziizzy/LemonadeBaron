@@ -1,0 +1,92 @@
+<html>
+<head>
+
+<style type="text/css">
+	html, body {
+		border: 0;
+		padding: 0;
+		margin: 0;
+		top: 0;
+		left: 0;
+	}
+
+</style>
+
+
+<script type="text/javascript">
+
+var assetManifest = [
+	{type: 'fragmentShader', name: 'frag', src: 'assets/shaders/fragment.glsl' },
+	{type: 'vertexShader', name: 'vert', src: 'assets/shaders/vertex.glsl' },
+	
+	{type: 'fragmentShader', name: 'terrain', src: 'assets/shaders/terrain-frag.glsl' },
+	{type: 'vertexShader', name: 'terrain', src: 'assets/shaders/terrain-vert.glsl' },
+	
+	{type: 'json', name: 'sdf_data', src: 'assets/sdf-output.json' },
+	{type: 'image', name: 'sdf_data', src: 'assets/sdf-output-1.png' },
+	{type: 'imageArray', name: 'terraintex', stripPath: true, src: [
+		'assets/textures/terrain/grass-base.png',
+		'assets/textures/terrain/grass-yellow-flowers.png',
+		'assets/textures/terrain/pavement.png',
+		'assets/textures/terrain/dirt.png',
+		'assets/textures/terrain/concrete.png',
+		'assets/textures/terrain/sidewalk-h.png',
+		'assets/textures/terrain/sidewalk-v.png',
+// 		'assets/textures/terrain/gravel.png',
+	]},
+	
+	
+]
+
+
+
+var gl;
+
+// document.addEventListener("DOMContentLoaded", function() {
+window.addEventListener("load", function() {
+	var glcanvas = document.getElementById('canvas');
+	gl = glcanvas.getContext("webgl2");
+	
+	var w = window.innerWidth;
+	var h = window.innerHeight;
+	console.log(w,h);
+	
+	glcanvas.width = window.innerWidth;
+	glcanvas.height = window.outerHeight;
+	glcanvas.style.width = window.innerWidth + 'px';
+	glcanvas.style.height = window.innerHeight + 'px';
+	
+	gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+	
+	loadAssets(assetManifest, function(err, a) {
+		main(a);
+	});
+});
+</script>
+
+<script type="text/javascript" src="3rd_party/gl-matrix-min.js"></script>
+<script type="text/javascript">
+(function(m) { // globalize glMatrix
+	for(var p in m) {
+		this[p] = m[p];
+	}
+})(glMatrix);
+</script>
+
+<script type="text/javascript" src="3rd_party/json5.min.js"></script>
+<script type="text/javascript" src="glcore.js"></script>
+<script type="text/javascript" src="terrain.js"></script>
+<script type="text/javascript" src="main.js"></script>
+
+
+<script type="text/javascript">
+
+</script>
+
+</head>
+<body>
+	<canvas id="canvas">Loading...</canvas>
+	
+	<div id="hidden" style="display:none;"></div>
+</body>
+</html>
