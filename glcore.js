@@ -90,6 +90,45 @@ var getGLTypeSize;
 
 
 
+function Texture(target, w, h) {
+	
+	this.tex = gl.createTexture();
+	this.target = target;
+	this.w = w;
+	this.h = h;
+	this.depth = -1;
+	
+	// TODO: fix this
+	this.format = gl.UNSIGNED_BYTE;
+	
+	return this;
+}
+
+Texture.prototype.bind = function() {
+	gl.bindTexture(this.target, this.tex);
+}
+Texture.prototype.unbind = function() {
+	gl.bindTexture(this.target, null);
+}
+
+Texture.prototype.updateLayer = function(layer, data) {
+	if(this.depth < 2 || this.depth <= layer) {
+		console.log("attempting to update invalid texture layer");
+		return;
+	}
+	
+	console.log(this.target, gl.TEXTURE_2D_ARRAY);
+	this.bind();
+	
+	gl.texSubImage3D(this.target, 0,
+		0, 0, layer, // offset
+		this.w, this.h, 1, 
+		/*this.type*/gl.RED, this.format,
+		data
+	);
+	
+}
+
 
 function loadTexture(image) {
 	var tex = gl.createTexture();
@@ -109,31 +148,43 @@ function loadTextureArray(images) {
 	var w = images[0].width;
 	var h = images[0].height;
 	
-	var tex = gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D_ARRAY, tex);
 	
-	gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 0, gl.RGBA8, w, h, images.length);
+	var tex = makeTexArray(gl.RGBA8, w, h, images.length);
+	tex.bind();
+	
+	//gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, w, h, images.length);
 	
 	for(var i in  images) {
 		gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0,
 			0, 0, i, // offset
 			w, h, 1, 
-			gl.RGBA8, gl.UNSIGNED_BYTE,
+			gl.RGBA, gl.UNSIGNED_BYTE,
 			images[i]
 		);
 	}
 	
 // 	gl.generateMipmap(gl.TEXTURE_2D_ARRAY);
-	gl.bindTexture(gl.TEXTURE_2D_ARRAY, null);
+	tex.unbind();
 	
-	return {
-		tex: tex,
-		w: image.width,
-		h: image.height,
-		depth: images.length,
-	};
+	tex.depth = images.length;
 	
+	return tex;
 }
+
+function makeTexArray(type, w, h, d) {
+	
+	var tex = new Texture(gl.TEXTURE_2D_ARRAY, w, h);
+	
+	tex.bind();
+	gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, type, w, h, d);
+	tex.unbind();
+	
+	tex.depth = d;
+	tex.type = type;
+	
+	return tex;
+}
+
 
 function loadShader(type, source) {
 	var shader = gl.createShader(type);

@@ -1,35 +1,22 @@
 #version 300 es
 
 precision mediump float;
-
+precision lowp sampler2DArray;
 
 in vec2 tex_vs;
+flat in float tex_index_vs;
 
 out vec4 outColor;
 
 
-uniform sampler2D sTex;
+uniform sampler2DArray sTex;
 
 
 void main() {
 	
-	float d = texture(sTex, tex_vs).r;
-	float a;
+	vec4 d = texture(sTex, vec3(tex_vs, tex_index_vs));
 	
-	if(d > .75) {
-		d = 1.0;// (d - .75) * -4;
-	}
-	else {
-		d = (d / 3.0) * 4.0;
-	}
-	d = 1.0 - d;
-
-	a = smoothstep(0.55, 0.65, abs(d));
-	
-	if(a < 0.01) {
-		discard;
-	};
-
-	outColor = vec4(.4,.1,.1, a); 
+	outColor = vec4(d.rgb, 1); 
+//  	outColor = vec4(tex_vs.xy,1.0, 1); 
 
 }

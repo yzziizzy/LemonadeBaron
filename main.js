@@ -2,6 +2,7 @@
 
 
 function main(assets) {
+	console.log("assets:", assets);
 	
 	var game = {};
 	
@@ -69,6 +70,7 @@ function loadAssets(manifest, cb) {
 		'vertexShader': {},
 		'json': {},
 		'image': {},
+		'imageArray': {},
 	};
 	
 	function textgrab(m, cb) {
@@ -106,11 +108,16 @@ function loadAssets(manifest, cb) {
 	}
 	
 	function imageArraygrab(m, cb) {
+		var imgList = [];
+		
 		function getimg(url, cb) {
 			var img = new Image();
+			imgList.push(img);
 			img.addEventListener('load', function() { cb(img); });
-			img.src = m.src;
+			console.log(url);
+			img.src = url;
 		}
+		
 		
 		var list = m.src.map(function(u) { return [getimg, u]; });
 		asyncParallel(list, function(err) {
@@ -119,7 +126,7 @@ function loadAssets(manifest, cb) {
 			}
 			
 			// TODO: load the array here
-			assets[m.type][m.name] = img;
+			assets[m.type][m.name] = loadTextureArray(imgList);
 			cb(null);
 		})
 	}
@@ -157,42 +164,27 @@ function init(game, assets) {
 	
 		// init input stuff
 
+	game.input = {
+		down: [],
+		pressed: [],
+	};
+	
 	document.addEventListener('keydown', function(e) {
-	//	_inputdata.down[e.which] = 1;
-	//	_inputdata.down[e.which] |= 0;
+		game.input.down[e.which] = 1;
+		game.input.down[e.which] |= 0;
 		e.preventDefault();
 	});
 	document.addEventListener('keyup', function(e) {
-	//	_inputdata.down[e.which] = 0;
-	//	_inputdata.pressed[e.which] = (_inputdata.pressed[e.which]>>>0) + 1;
+		game.input.down[e.which] = 0;
+		game.input.pressed[e.which] = (game.input.pressed[e.which]>>>0) + 1;
 		e.preventDefault();
 	});
 	
 	
-/*	
-		if(ii.down[37]) {
-			//console.log(ii);
-			otters[0].uiDirection.x = -1;
-			otters[0].uiAcc = true;
-		}
-		if(ii.down[39]) {
-			//console.log(ii);
-			otters[0].uiDirection.x = 1;
-			otters[0].uiAcc = true;
-		}
-		if(ii.down[38]) {
-			//console.log(ii);
-			otters[0].uiDirection.y = -1;
-			otters[0].uiAcc = true;
-		}
-		if(ii.down[40]) {
-			//console.log(ii);
-			otters[0].uiDirection.y = 1;
-			otters[0].uiAcc = true;
-		}*/
+
 	
-	game.cameraCenter = [0,0, -1];
-	game.scale = .005;
+	game.cameraCenter = [-32,-32, -1];
+	game.scale = .05;
 	
 	game.aspectRatio = gl.drawingBufferHeight / gl.drawingBufferWidth;
 	
@@ -239,6 +231,10 @@ function init(game, assets) {
 	
 //	console.log(glMatrix)
 	
+	game.terrain = new Terrain(assets);
+	
+	console.log('init complete');   
+	
 }
 
 
@@ -247,6 +243,29 @@ function drawFrame(game, timeElapsed, globalTime) {
 	
 	gl.clearColor(0, 0, 0, 0);
 	gl.clear(gl.COLOR_BUFFER_BIT);
+	
+	var scrollSpeed = 0.05;
+	
+	var ii = game.input;
+	if(ii.down[37]) {
+		//console.log(ii);
+		game.cameraCenter[0] += scrollSpeed;
+	}
+	if(ii.down[39]) {
+		//console.log(ii);
+		game.cameraCenter[0] += -scrollSpeed;
+	}
+	if(ii.down[38]) {
+		//console.log(ii);
+		game.cameraCenter[1] += -scrollSpeed;
+	}
+	if(ii.down[40]) {
+		//console.log(ii);
+		game.cameraCenter[1] += scrollSpeed;
+	}
+	
+	
+	
 	
 	gl.useProgram(game.prog);
 	
@@ -261,10 +280,11 @@ function drawFrame(game, timeElapsed, globalTime) {
 	
  	mat4.mul(game.vp, game.m_proj, game.m_view);
 	
+	game.terrain.render(game);
 
 //	console.log(game.vp);
 	
-	
+/*	
 	gl.bindBuffer(gl.ARRAY_BUFFER, game.vbo.vbo);
 	gl.bindBuffer(gl.ARRAY_BUFFER, game.instvbo.vbo);
 	
@@ -282,6 +302,8 @@ function drawFrame(game, timeElapsed, globalTime) {
 	var count = 4;
 	var instances = 4;
 	gl.drawArraysInstanced(primitiveType, offset, count, instances);
+	
+	*/
 }
 
 

@@ -14,12 +14,13 @@ function Terrain(assets, atlas) {
 	this.pos_ul = gl.getUniformLocation(this.prog, "position");
 	
 	this.vaoInfo = makeVAO([
-		{ buf: 0, name: 'vpos', loc: 0, count: 3, type: gl.FLOAT, norm: false },
-		{ buf: 0, name: 'vtex', loc: 1, count: 2, type: gl.FLOAT, norm: false },
-		{ buf: 1, name: 'pos_ind',  loc: 2, count: 3, type: gl.FLOAT, norm: false, divisor: 6 },
+		{ buf: 0, name: 'vpos',     loc: 0, count: 3, type: gl.FLOAT, norm: false },
+		{ buf: 0, name: 'vtex',     loc: 1, count: 2, type: gl.FLOAT, norm: false },
+		{ buf: 1, name: 'pos_ind',  loc: 2, count: 3, type: gl.FLOAT, norm: false, divisor: 1 },
 	]);
 	
-	this.qvbo = makeQuad(this.vaoInfo, 0);
+	this.meshVBO = this.makeTerrainMeshVBO();
+	this.instVBO = this.makeInstVBO();
 	
 	this.instances = [];
 	
@@ -33,7 +34,36 @@ function Terrain(assets, atlas) {
 	};
 	
 	
+	this.dataTex = makeTexArray(gl.R8, 64,64, 16);
+	
+	// clear the map first
+	var map = new Uint8Array(64*64).fill(0);
+	for(var y = 0; y < 64; y++) {
+		for(var x = 0; x < 64; x++) {
+			var d = (Math.random() * 5) | 0;
+			//console.log(d);
+			map[x + (y * 64)] = d
+		}
+	}
+	
+	this.dataTex.updateLayer(0, map);
+	this.dataTex.updateLayer(1, map);
+	
+	this.tilesTex = assets.imageArray['terraintex'];
+	
+	
 	return this;
+}
+
+
+
+
+Terrain.prototype.loadTiles = function(tiles) {
+	for(var t in tiles) {
+		
+	}
+	
+	
 }
 
 
@@ -41,27 +71,6 @@ Terrain.prototype.setTile = function(pos, tile) {
 	
 	
 }
-
-Terrain.prototype.render = function(ri, center, size) {
-	gl.useProgram(this.prog);
-	
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.qvbo.vbo);
-	
-	//find and render blocks
-}
-
-Terrain.prototype.renderBlock = function(block) {
-	
-	gl.uniform2f(this.pos_ul, block.aabb[0], block.aabb[1]);
-
-	gl.bindBuffer(gl.ARRAY_BUFFER, block.vbo.vbo);
-	
-	var offset = 0;
-	var count = 4;
-	var instances = 64 * 64;
-	
-	gl.drawArraysInstanced(gl.TRIANGLE_STRIP, offset, count, instances);
-};
 
 
 
@@ -89,7 +98,7 @@ Terrain.prototype.makeBlock = function(tl) {
 
 
 Terrain.prototype.makeTerrainMeshVBO = function(arr) {
-	var buf = []
+	var buf = [];
 	
 	for(var y = 0; y < 64; y++) {
 		for(var x = 0; x < 64; x++) {
@@ -112,11 +121,13 @@ Terrain.prototype.makeTerrainMeshVBO = function(arr) {
 			buf.push(1);
 			buf.push(0);
 			
+			// ------------------
+			
 			buf.push(x);
-			buf.push(y);
+			buf.push(y + 1);
 			buf.push(1);
 			buf.push(0);
-			buf.push(0);
+			buf.push(1);
 			
 			buf.push(x + 1);
 			buf.push(y);
@@ -131,11 +142,35 @@ Terrain.prototype.makeTerrainMeshVBO = function(arr) {
 			buf.push(1);
 		}
 	}
-	
-	return makeVBO(buf, this.vaoInfo, 1, gl.DYNAMIC_DRAW);
+// 	console.log("vbo len", buf.length);
+
+	return makeVBO(new Float32Array(buf), this.vaoInfo, 0, gl.DYNAMIC_DRAW);
 }
 
 Terrain.prototype.makeInstVBO = function(arr) {
+	var buf = [];
+	
+	buf.push(0);
+	buf.push(0);
+	buf.push(0);
+	
+	buf.push(0);
+	buf.push(0);
+	buf.push(0);
+	buf.push(0);
+	buf.push(0);
+	buf.push(0);
+	buf.push(0);
+	buf.push(0);
+	buf.push(0);
+	buf.push(0);
+	buf.push(0);
+	buf.push(0);
+	
+	console.log("vbo len", buf.length);
+	return makeVBO(new Float32Array(buf), this.vaoInfo, 1, gl.DYNAMIC_DRAW);
+}
+/*
 Terrain.prototype.makeTerrainVBO = function(arr) {
 	var buf = [];
 	var sz = 10;
@@ -165,4 +200,38 @@ Terrain.prototype.makeTerrainVBO = function(arr) {
 	}
 	
 	return makeVBO(buf, this.vaoInfo, 1, gl.DYNAMIC_DRAW);
+}*/
+
+
+Terrain.prototype.render = function(game) {
+	
+	gl.useProgram(this.prog);
+	
+	var vp_ul = gl.getUniformLocation(this.prog, "mViewProj");
+	gl.uniformMatrix4fv(vp_ul, false, game.vp);
+	
+	
+	gl.activeTexture(gl.TEXTURE0 + 0);
+	gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.tilesTex.tex);
+// 	gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.dataTex.tex);
+	var tex_ul = gl.getUniformLocation(this.prog, "sTex");
+	gl.uniform1i(tex_ul, 0);
+
+	gl.activeTexture(gl.TEXTURE0 + 1);
+	gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.dataTex.tex);
+	var lookup_tex_ul = gl.getUniformLocation(this.prog, "sTileLookup");
+	gl.uniform1i(lookup_tex_ul, 1);
+	
+	gl.bindVertexArray(this.vaoInfo.vao);
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.meshVBO.vbo);
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.instVBO.vbo);
+	
+// 	console.log(this.meshVBO, this.instVBO);
+	
+	var primitiveType = gl.TRIANGLES;
+	var offset = 0;
+	var count = 6 * 64 * 64;
+	var instances = 1;
+	gl.drawArraysInstanced(primitiveType, offset, count, instances);
+	
 }
