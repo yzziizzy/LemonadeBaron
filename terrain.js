@@ -2,7 +2,6 @@
 
 
 function Terrain(assets, atlas) {
-	this.atlas = atlas;
 	
 	this.last = {
 		center: [0,0],
@@ -47,7 +46,6 @@ function Terrain(assets, atlas) {
 	}
 	
 	this.dataTex.updateLayer(0, map);
-	this.dataTex.updateLayer(1, map);
 	
 	this.tilesTex = assets.imageArray['terraintex'];
 	
@@ -102,41 +100,41 @@ Terrain.prototype.makeTerrainMeshVBO = function(arr) {
 	
 	for(var y = 0; y < 64; y++) {
 		for(var x = 0; x < 64; x++) {
-			buf.push(x);
-			buf.push(y);
+			buf.push(x - 0.5);
+			buf.push(y - 0.5);
 			buf.push(1);
 			buf.push(0);
 			buf.push(0);
 			
 			
-			buf.push(x);
-			buf.push(y + 1);
+			buf.push(x - 0.5);
+			buf.push(y + 0.5);
 			buf.push(1);
 			buf.push(0);
 			buf.push(1);
 			
-			buf.push(x + 1);
-			buf.push(y);
+			buf.push(x + 0.5);
+			buf.push(y - 0.5);
 			buf.push(1);
 			buf.push(1);
 			buf.push(0);
 			
 			// ------------------
 			
-			buf.push(x);
-			buf.push(y + 1);
+			buf.push(x - 0.5);
+			buf.push(y + 0.5);
 			buf.push(1);
 			buf.push(0);
 			buf.push(1);
 			
-			buf.push(x + 1);
-			buf.push(y);
+			buf.push(x + 0.5);
+			buf.push(y - 0.5);
 			buf.push(1);
 			buf.push(1);
 			buf.push(0);
 			
-			buf.push(x + 1);
-			buf.push(y + 1);
+			buf.push(x + 0.5);
+			buf.push(y + 0.5);
 			buf.push(1);
 			buf.push(1);
 			buf.push(1);
@@ -167,7 +165,7 @@ Terrain.prototype.makeInstVBO = function(arr) {
 	buf.push(0);
 	buf.push(0);
 	
-	console.log("vbo len", buf.length);
+// 	console.log("vbo len", buf.length);
 	return makeVBO(new Float32Array(buf), this.vaoInfo, 1, gl.DYNAMIC_DRAW);
 }
 /*

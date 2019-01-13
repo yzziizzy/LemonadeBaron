@@ -4,9 +4,9 @@
 function main(assets) {
 	console.log("assets:", assets);
 	
-	var game = {};
-	
-	init(game, assets);
+	game = new Game(assets);
+
+	game.init();
 	
 	game.prog = loadProgram2(assets.vertexShader.vert, assets.fragmentShader.frag);
 	
@@ -46,10 +46,10 @@ function main(assets) {
 		
 		var te = now - last;
 		last = now;
-		globalTimer += te;
+		game.gameTime += te;
 		
-		drawFrame(game, te, globalTimer);
-		
+// 		drawFrame(game, te, globalTimer);
+		game.loop(te);
 		
 		requestAnimationFrame(draw);
 	}
@@ -156,15 +156,37 @@ function loadAssets(manifest, cb) {
 }
 
 
+function Game(assets) {
+	this.assets = assets;
+	
+	this.nextIndex = 1;
+	
+	this.entities = [];
+	this.components = {
+		position: {},
+		nextpos: {},
+		velocity: {},
+		acceleration: {},
+		rotation: {},
+		scale: {},
+		alpha: {},
+		maxSpeed: {},
+	};
+	this.systems = Systems;
+	
+	this.maxStep = .01;
+	this.secondAcc = 0;
+	this.gameTime = 0;
+	
+}
 
-function init(game, assets) {
-	
-	
+Game.prototype.init = function() {
+	var game = this;
 
 	
 		// init input stuff
 
-	game.input = {
+	this.input = {
 		down: [],
 		pressed: [],
 	};
@@ -183,10 +205,10 @@ function init(game, assets) {
 	
 
 	
-	game.cameraCenter = [-32,-32, -1];
-	game.scale = .05;
+	this.cameraCenter = [-32,-32, -1];
+	this.scale = .05;
 	
-	game.aspectRatio = gl.drawingBufferHeight / gl.drawingBufferWidth;
+	this.aspectRatio = gl.drawingBufferHeight / gl.drawingBufferWidth;
 	
 	
 	var quad = new Float32Array([
@@ -197,15 +219,15 @@ function init(game, assets) {
 	]);
 	
 	var buf = [];
-	var font = assets.json.sdf_data.fonts["Courier"].regular;
-	var adv = makeSDFChar("F".charCodeAt(0), font, assets.json.sdf_data, buf, 0, 0);
-	adv += makeSDFChar("o".charCodeAt(0), font, assets.json.sdf_data, buf, adv, 0);
-	adv += makeSDFChar("o".charCodeAt(0), font, assets.json.sdf_data, buf, adv, 0);
-	adv += makeSDFChar("d".charCodeAt(0), font, assets.json.sdf_data, buf, adv, 0);
+	var font = this.assets.json.sdf_data.fonts["Courier"].regular;
+	var adv = makeSDFChar("F".charCodeAt(0), font, this.assets.json.sdf_data, buf, 0, 0);
+	adv += makeSDFChar("o".charCodeAt(0), font, this.assets.json.sdf_data, buf, adv, 0);
+	adv += makeSDFChar("o".charCodeAt(0), font, this.assets.json.sdf_data, buf, adv, 0);
+	adv += makeSDFChar("d".charCodeAt(0), font, this.assets.json.sdf_data, buf, adv, 0);
 	
 	//quad = new Float32Array(buf);
 	
-	game.vaoInfo = makeVAO([
+	this.vaoInfo = makeVAO([
 		{ buf: 0, name: 'vpos', loc: 0, count: 3, type: gl.FLOAT, norm: false },
 		{ buf: 0, name: 'vtex', loc: 1, count: 2, type: gl.FLOAT, norm: false },
 		{ buf: 1, name: 'pos',   loc: 2, count: 3, type: gl.FLOAT, norm: false, divisor: 1 },
@@ -214,73 +236,264 @@ function init(game, assets) {
 		{ buf: 1, name: 'color', loc: 5, count: 4, type: gl.FLOAT, norm: false, divisor: 1 },
 	]);
 	
-	game.vbo = makeVBO(quad, game.vaoInfo, 0);
+	this.vbo = makeVBO(quad, this.vaoInfo, 0);
 	
 	
 	var inst = new Float32Array(buf);
 	
-	game.instvbo = makeVBO(inst, game.vaoInfo, 1);
+	this.instvbo = makeVBO(inst, this.vaoInfo, 1);
 
 	
-	game.sdftex = loadTexture(assets.image.sdf_data);
+	this.sdftex = loadTexture(this.assets.image.sdf_data);
 	
 	
-	var ash = game.aspectRatio / 2;
-	game.m_proj = mat4.create();
-	mat4.ortho(game.m_proj, -0.5, 0.5, -ash, ash, 0, 1000);
+	var ash = this.aspectRatio / 2;
+	this.m_proj = mat4.create();
+	mat4.ortho(this.m_proj, -0.5, 0.5, -ash, ash, 0, 1000);
 	
 //	console.log(glMatrix)
 	
-	game.terrain = new Terrain(assets);
+	this.terrain = new Terrain(this.assets);
+	this.activeSprites = new SpriteSet(this.assets);
+	
+	for(var i = 0; i < 20; i++) {
+		var e = this.addEntity();
+		this.addComponent(e, 'position', {
+			x: 32 + (Math.random() * 20) - 10,
+			y: 32 + (Math.random() * 20) - 10
+		});
+
+		this.addComponent(e, 'scale', .5 + Math.random() * 2);
+
+		this.activeSprites.addInstance(e, 'marker-blue');
+	}
 	
 	console.log('init complete');   
 	
 }
 
+Game.prototype.addEntity = function() {
+	var i = this.nextIndex++;
+	return i;
+};
+Game.prototype.getAllComponents = function(eid) {
+	var l = [];
+	
+	for(var cn in this.components) { if(this.components.hasOwnProperty(cn)) {
+		var cmp = this.components[cn][eid]
+		
+		if(cmp) {
+			l.push({type: cn, data: cmp});
+		}
+	}}
+	
+	return l;
+};
+
+// checks existence first
+Game.prototype.addComponent = function(eid, name, data) {
+	
+	if(!this.components[name])
+		this.components[name] = {};
+	
+	this.components[name][eid] = data;
+};
 
 
-function drawFrame(game, timeElapsed, globalTime) {
+// doesn't check existence
+Game.prototype.setComp = function(eid, name, data) {
+	this.components[name][eid] = data;
+};
+
+Game.prototype.getComp = function(eid, name) {
+	return this.components[name] ? this.components[name][eid] : null;
+};
+Game.prototype.removeComp = function(eid, name) {
+	delete this.components[name][eid];
+};
+
+
+Game.prototype.spawn = function(entity) {
+	var eid = this.addEntity();
+	
+	for(var prop in entity) { if(entity.hasOwnProperty(prop)) {
+		var data = entity[prop];
+		// fuck references. real languages use pointers.
+		if(typeof data == 'object')
+			data = $.extend({}, data);
+		
+		this.addComponent(eid, prop, data);
+	}}
+	
+	return eid;
+}
+
+
+function runSystem(allComps, reqComps, cb){
+	var len = reqComps.length;
+	
+	
+	for(var eid in allComps[reqComps[0]]) {
+		var go = true;
+		var e = {};
+		for(var i = 0; i < len; i++) {
+			var cn = reqComps[i];
+			if(!allComps[cn] || !allComps[cn].hasOwnProperty(eid)) {
+				go = false;
+				break;
+			}
+			
+			e[cn] = allComps[cn][eid]
+		}
+		
+		if(go) cb(e, eid);
+	}
+}
+
+
+
+Game.prototype.loop = function(te) {
+	
+	//console.log('looping');
+// 	this.updateInput();
+	
+	// inludes timers
+	this.updateGame(te);
+	
+	
+	this.render();
+	
+	
+//	if(this.runGame) window.requestAnimFrame(this.animFrame);
+};
+
+
+
+
+Game.prototype.updateGame = function(te) {
+	
+	// timeless stuff
+// 	this.systems.userControl();
+	
+	this.secondAcc += te;
+	
+	var steps = Math.floor(te / this.maxStep);
+	var leftover = te - (steps * this.maxStep);
+	
+	// nice little physics steps
+	for(var i = 0; i < steps; i++) {
+		this.gameTime += this.maxStep;
+		this.step(this.maxStep);
+	}
+	this.gameTime += leftover;
+	this.step(leftover);
+	
+	// once per frame
+	this.frameStep(te);
+	
+	// ~once per second
+	if(this.secondAcc > 1) {
+		this.secondStep(this.secondAcc);
+		this.secondAcc = 0;
+	};
+	
+	
+	
+	return te;
+}
+
+
+// this is for things that need reasonable integration like physics
+Game.prototype.step = function(te) {
+	
+	return;
+	this.systems.move(te);
+	
+	this.systems.goTo();
+	
+	
+	this.systems.acceleration(te);
+	this.systems.velocity(te);
+	
+	this.systems.urge(te);
+	
+	
+	
+	this.systems.checkCollisions();
+	
+	// the odometer must be called immediately before movement finalization
+	this.systems.odometer();
+	this.systems.finalizeMove();
+	
+	
+};
+
+// this is for things that need per-frame updates, but can handle large steps like HUD
+Game.prototype.frameStep = function(te) {
+	return;
+	this.systems.mapFollows(); 
+	this.systems.lookAt();
+	
+};
+
+// called ~ once every second. useful for game logic, etc
+Game.prototype.secondStep = function(te) {
+	return;
+	this.systems.ai.thirst();
+	this.systems.ai.thirsty_LocateStand();
+	this.systems.ai.buyDrink();
+	this.systems.ai.followPaths();
+};
+
+
+
+Game.prototype.render = function() {
+// function drawFrame(game, timeElapsed, globalTime) {
 	
 	gl.clearColor(0, 0, 0, 0);
 	gl.clear(gl.COLOR_BUFFER_BIT);
 	
+	gl.enable(gl.BLEND);
+	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+	
 	var scrollSpeed = 0.05;
 	
-	var ii = game.input;
+	var ii = this.input;
 	if(ii.down[37]) {
 		//console.log(ii);
-		game.cameraCenter[0] += scrollSpeed;
+		this.cameraCenter[0] += scrollSpeed;
 	}
 	if(ii.down[39]) {
 		//console.log(ii);
-		game.cameraCenter[0] += -scrollSpeed;
+		this.cameraCenter[0] += -scrollSpeed;
 	}
 	if(ii.down[38]) {
 		//console.log(ii);
-		game.cameraCenter[1] += -scrollSpeed;
+		this.cameraCenter[1] += -scrollSpeed;
 	}
 	if(ii.down[40]) {
 		//console.log(ii);
-		game.cameraCenter[1] += scrollSpeed;
+		this.cameraCenter[1] += scrollSpeed;
 	}
 	
 	
 	
 	
-	gl.useProgram(game.prog);
+	gl.useProgram(this.prog);
 	
 	
-	game.m_view = mat4.create();
+	this.m_view = mat4.create();
 	
-	mat4.scale(game.m_view, game.m_view, [game.scale, game.scale, game.scale]);
-	mat4.translate(game.m_view, game.m_view, game.cameraCenter);
+	mat4.scale(this.m_view, this.m_view, [this.scale, this.scale, this.scale]);
+	mat4.translate(this.m_view, this.m_view, this.cameraCenter);
 	
-	game.vp = mat4.create();
+	this.vp = mat4.create();
 	
 	
- 	mat4.mul(game.vp, game.m_proj, game.m_view);
+ 	mat4.mul(this.vp, this.m_proj, this.m_view);
 	
-	game.terrain.render(game);
+	this.terrain.render(this);
+	this.activeSprites.render(this);
 
 //	console.log(game.vp);
 	

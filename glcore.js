@@ -56,7 +56,6 @@ function asyncParallel(list, cb) {
 				if(lookup[n]) return;
 				lookup[n] = 1;
 				num--;
-				console.log('meh', num);
 				if(num == 0) cb(savedErr);
 			}
 		})(a));
@@ -290,7 +289,7 @@ function configVAO(vaoInfo, bufIndex) {
 	for(var a of vaoInfo.attribs) {
 		if(bufIndex == a.buf) {
 			gl.enableVertexAttribArray(a.loc);
-			console.log(a, off, stride);
+// 			console.log(a, off, stride);
 			gl.vertexAttribPointer(a.loc, a.count, a.type, a.norm, stride, off);
 			if(a.divisor) gl.vertexAttribDivisor(a.loc, a.divisor);
 			off += getGLTypeSize(a.type) * a.count;

@@ -15,15 +15,33 @@
 
 <script type="text/javascript">
 
+var game;
+var Systems = {};
+
 var assetManifest = [
 	{type: 'fragmentShader', name: 'frag', src: 'assets/shaders/fragment.glsl' },
 	{type: 'vertexShader', name: 'vert', src: 'assets/shaders/vertex.glsl' },
 	
 	{type: 'fragmentShader', name: 'terrain', src: 'assets/shaders/terrain-frag.glsl' },
+	{type: 'fragmentShader', name: 'sprite', src: 'assets/shaders/sprite-frag.glsl' },
 	{type: 'vertexShader', name: 'terrain', src: 'assets/shaders/terrain-vert.glsl' },
+	{type: 'vertexShader', name: 'sprite', src: 'assets/shaders/sprite-vert.glsl' },
 	
 	{type: 'json', name: 'sdf_data', src: 'assets/sdf-output.json' },
 	{type: 'image', name: 'sdf_data', src: 'assets/sdf-output-1.png' },
+	{type: 'imageArray', name: 'sprites', stripPath: true, src: [
+		'assets/textures/sprites/marker-blue.png',
+		'assets/textures/sprites/marker-brown.png',
+		'assets/textures/sprites/marker-cyan.png',
+		'assets/textures/sprites/marker-gray.png',
+		'assets/textures/sprites/marker-green.png',
+		'assets/textures/sprites/marker-orange.png',
+		'assets/textures/sprites/marker-pink.png',
+		'assets/textures/sprites/marker-purple.png',
+		'assets/textures/sprites/marker-red.png',
+		'assets/textures/sprites/marker-teal.png',
+		'assets/textures/sprites/marker-yellow.png',
+	]},
 	{type: 'imageArray', name: 'terraintex', stripPath: true, src: [
 		'assets/textures/terrain/grass-base.png',
 		'assets/textures/terrain/grass-yellow-flowers.png',
@@ -75,8 +93,11 @@ window.addEventListener("load", function() {
 
 <script type="text/javascript" src="3rd_party/json5.min.js"></script>
 <script type="text/javascript" src="glcore.js"></script>
+<script type="text/javascript" src="sprite.js"></script>
 <script type="text/javascript" src="terrain.js"></script>
 <script type="text/javascript" src="main.js"></script>
+
+<script type="text/javascript" src="systems/movement.js"></script>
 
 
 <script type="text/javascript">

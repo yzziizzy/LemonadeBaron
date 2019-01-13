@@ -1,2 +1,82 @@
 textures: 
 	pile of wood
+	hammer icon
+	paint icon
+	saw icon
+	glue icon
+	posterboard icon
+	dollars icon
+	cash wad icon
+	paper icon
+	flyers icon
+	advertising:
+		flyer
+		poster
+		sign
+		billboard
+	mixer
+	blender
+	juicer, hand and electric
+	individual lemons icon
+	bag of lemons
+	crate of lemons
+	pallet container of lemons
+	container of caffeine
+	container of cocaine
+	sugar icons:
+		small bag
+		large bag
+		50lb bag
+		pallet of sugar bags
+	locks of various strengths
+	keyring icon
+	clothes images:
+		poor
+		decent
+		fancy
+		stylish 
+		pimp
+		mafia
+	
+sprites:
+	lemonade stands:
+		shitty
+		basic
+		fancy
+	telephone pole
+	shipping containers
+	animations:
+		"poof" dust
+	buildings:
+		random houses
+		random stores
+		hardware store
+		bank
+		grocery store
+		department store
+		uniform store
+		tailor (gotta buy pimp suits)
+		print shop
+		uhaul
+		lemonade/juice store
+	vehicles:
+		random cars
+		small pickup truck
+		rental versions of all trucks
+		small delivery truck
+		large delivery truck
+		taxi
+		mafia cars
+		cop cars
+
+characters:
+	susy
+	random people
+	kids/ workers/ bullies
+	cops
+	mafiosos
+	hired thugs
+	professional private security
+	mercenaries
+	bums
+	
