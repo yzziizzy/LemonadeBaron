@@ -58,24 +58,6 @@ Systems.drawActors = function(ctx, view, center) {
 // 	
 // }
 
-Systems.finalizeMove = function(te) {
-	//return;
-	var movers = game.components.velocity;
-	
-	for(var eid in movers) { if(movers.hasOwnProperty(eid)) { var vel = movers[eid];
-		
-		var pos = game.getComp(eid, 'position');
-		var nextpos = game.getComp(eid, 'nextpos');
-		
-		// references...
-		pos.x = nextpos.x; 
-		pos.y = nextpos.y; 
-	}};
-	
-	
-}
-
-
 
 
  

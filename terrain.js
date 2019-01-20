@@ -35,17 +35,29 @@ function Terrain(assets, atlas) {
 	
 	this.dataTex = makeTexArray(gl.R8, 64,64, 16);
 	
-	// clear the map first
-	var map = new Uint8Array(64*64).fill(0);
-	for(var y = 0; y < 64; y++) {
-		for(var x = 0; x < 64; x++) {
-			var d = (Math.random() * 5) | 0;
-			//console.log(d);
-			map[x + (y * 64)] = d
-		}
-	}
 	
-	this.dataTex.updateLayer(0, map);
+	this.map = new Map();
+	var map = this.map;
+	
+	map.fillRandom(pt(0,0), pt(63, 63), [0,0,1]);
+	
+	// main street
+	map.placeRoad(pt(0,36), pt(63, 36), [3,2,2,2,3]);
+ 	
+	// side streets
+	for(var i = 0; i < 3; i++) {
+		map.placeRoad(pt(5 + i*15,36), pt(5 + i*15, 20), [3,2,2,2,3]);
+	}
+// 	// clear the map first
+// 	for(var y = 0; y < 64; y++) {
+// 		for(var x = 0; x < 64; x++) {
+// 			var d = (Math.random() * 5) | 0;
+// 			//console.log(d);
+// 			map[x + (y * 64)] = d
+// 		}
+// 	}
+// 	
+	this.dataTex.updateLayer(0, map.getBlock(0,0).tiles);
 	
 	this.tilesTex = assets.imageArray['terraintex'];
 	
@@ -148,24 +160,17 @@ Terrain.prototype.makeTerrainMeshVBO = function(arr) {
 Terrain.prototype.makeInstVBO = function(arr) {
 	var buf = [];
 	
-	buf.push(0);
-	buf.push(0);
-	buf.push(0);
+	// need to track which layers of the tile info texture are used and which map to what block
+	// use sync objects to know when it's safe to use and recycle
+	
+	// TODO: need to get view area from matrices
+// 	var blocks = this.map.blocksInArea();
 	
 	buf.push(0);
 	buf.push(0);
 	buf.push(0);
-	buf.push(0);
-	buf.push(0);
-	buf.push(0);
-	buf.push(0);
-	buf.push(0);
-	buf.push(0);
-	buf.push(0);
-	buf.push(0);
-	buf.push(0);
-	
-// 	console.log("vbo len", buf.length);
+
+	// 	console.log("vbo len", buf.length);
 	return makeVBO(new Float32Array(buf), this.vaoInfo, 1, gl.DYNAMIC_DRAW);
 }
 /*

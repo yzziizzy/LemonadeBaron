@@ -1,5 +1,22 @@
 
 
+function vecLen(x,y) {
+	return Math.hypot(x,y);
+}
+
+function abs(a) {
+	return Math.abs(a);
+}
+
+function norm(x,y) {
+	var l = vecLen(x,y);
+	if(l == 0) return {x:0, y:0};
+	return {
+		x: x / l,
+		y: y / l,
+	};
+}
+
 Systems.urge = function(te) {
 	
 	var moves = game.components.movable;
@@ -148,7 +165,7 @@ Systems.goTo = function() {
 	
 	var epsilon = .1;
 	
-	runSystem(game.c, comps, function(ent) {
+	runSystem(game.components, comps, function(ent) {
 		if(ent.goTo == null) return;
 		if(vDist(ent.goTo, ent.position) < epsilon) {
 			ent.acceleration.x = 0;
@@ -178,7 +195,7 @@ Systems.acceleration = function(te) {
 	
 	var comps = ['acceleration', 'velocity', 'maxSpeed'];
 
-	runSystem(game.c, comps, function(ent) {
+	runSystem(game.components, comps, function(ent) {
 		
 		var x = ent.velocity.x + ent.acceleration.x * te;
 		var y = ent.velocity.y + ent.acceleration.y * te;
@@ -203,7 +220,7 @@ Systems.velocity = function(te) {
 	
 	var comps = ['velocity', 'position', 'nextpos'];
 
-	runSystem(game.c, comps, function(ent) {
+	runSystem(game.components, comps, function(ent) {
 		
 		// need better integrator
 		ent.nextpos.x = ent.position.x + te * ent.velocity.x;
@@ -218,7 +235,7 @@ Systems.lookAt = function() {
 	
 	var comps = ['lookAt', 'sprite'];
 
-	runSystem(game.c, comps, function(ent, eid) {
+	runSystem(game.components, comps, function(ent, eid) {
 		
 		var dir = game.getComp(eid, ent.lookAt);
 		
@@ -242,7 +259,7 @@ Systems.odometer = function(te) {
 	
 	var comps = ['nextpos', 'position', 'odometer'];
 
-	runSystem(game.c, comps, function(ent) {
+	runSystem(game.components, comps, function(ent) {
 		
 		// need better integrator
 		var len = vDist(ent.nextpos, ent.position);
@@ -254,5 +271,23 @@ Systems.odometer = function(te) {
 	
 };
 
+
+
+Systems.finalizeMove = function(te) {
+	//return;
+	var movers = game.components.velocity;
+	
+	for(var eid in movers) { if(movers.hasOwnProperty(eid)) { var vel = movers[eid];
+		
+		var pos = game.getComp(eid, 'position');
+		var nextpos = game.getComp(eid, 'nextpos');
+		
+		// references...
+		pos.x = nextpos.x; 
+		pos.y = nextpos.y; 
+	}};
+	
+	
+}
 
 

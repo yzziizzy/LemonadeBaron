@@ -20,6 +20,8 @@ textures:
 	individual lemons icon
 	bag of lemons
 	crate of lemons
+	pitchers, empty and full
+	cups, empty and full
 	pallet container of lemons
 	container of caffeine
 	container of cocaine
@@ -70,7 +72,7 @@ sprites:
 		cop cars
 
 characters:
-	susy
+	susie
 	random people
 	kids/ workers/ bullies
 	cops

@@ -170,7 +170,9 @@ function Game(assets) {
 		rotation: {},
 		scale: {},
 		alpha: {},
+		urge: {},
 		maxSpeed: {},
+		movable: {},
 	};
 	this.systems = Systems;
 	
@@ -205,8 +207,9 @@ Game.prototype.init = function() {
 	
 
 	
-	this.cameraCenter = [-32,-32, -1];
-	this.scale = .05;
+	this.cameraCenter = [-32,-32, -10];
+// 	this.scale = -200.05;
+	this.scale = 1;//-200.05;
 	
 	this.aspectRatio = gl.drawingBufferHeight / gl.drawingBufferWidth;
 	
@@ -249,24 +252,37 @@ Game.prototype.init = function() {
 	
 	var ash = this.aspectRatio / 2;
 	this.m_proj = mat4.create();
-	mat4.ortho(this.m_proj, -0.5, 0.5, -ash, ash, 0, 1000);
+// 	mat4.ortho(this.m_proj, -0.5, 0.5, -ash, ash, 0, 1000);
+	mat4.perspective(this.m_proj, 3.14 / 2.0, 
+		gl.drawingBufferWidth / gl.drawingBufferHeight, 
+		0.01, 1000);
 	
 //	console.log(glMatrix)
 	
 	this.terrain = new Terrain(this.assets);
 	this.activeSprites = new SpriteSet(this.assets);
 	
-	for(var i = 0; i < 20; i++) {
+	for(var i = 0; i < 5; i++) {
 		var e = this.addEntity();
-		this.addComponent(e, 'position', {
-			x: 32 + (Math.random() * 20) - 10,
-			y: 32 + (Math.random() * 20) - 10
-		});
+		
+		var pos = {
+			x: 32 + (Math.random() * 2) - 1,
+			y: 32 + (Math.random() * 2) - 1
+		};
+		this.addComponent(e, 'position', pos);
+		this.addComponent(e, 'movable', 1);
 
 		this.addComponent(e, 'scale', .5 + Math.random() * 2);
+		this.addComponent(e, 'maxSpeed', 4.5 + Math.random() * 2);
+		this.addComponent(e, 'nextpos', pt(pos.x, pos.y));
+		this.addComponent(e, 'acceleration', {x:0,y:0});//pt(Math.random() * .1, Math.random() * .1));
+		this.addComponent(e, 'velocity', pt(0,0));
 
 		this.activeSprites.addInstance(e, 'marker-blue');
 	}
+	
+	
+	this.followEID = 3;
 	
 	console.log('init complete');   
 	
@@ -320,7 +336,7 @@ Game.prototype.spawn = function(entity) {
 		var data = entity[prop];
 		// fuck references. real languages use pointers.
 		if(typeof data == 'object')
-			data = $.extend({}, data);
+			data = clone(data);
 		
 		this.addComponent(eid, prop, data);
 	}}
@@ -406,23 +422,25 @@ Game.prototype.updateGame = function(te) {
 // this is for things that need reasonable integration like physics
 Game.prototype.step = function(te) {
 	
-	return;
-	this.systems.move(te);
+	
+// 	this.systems.move(te);
 	
 	this.systems.goTo();
-	
+// 	console.log(te);
 	
 	this.systems.acceleration(te);
 	this.systems.velocity(te);
+	
+// 	return;
 	
 	this.systems.urge(te);
 	
 	
 	
-	this.systems.checkCollisions();
+// 	this.systems.checkCollisions();
 	
 	// the odometer must be called immediately before movement finalization
-	this.systems.odometer();
+ 	this.systems.odometer();
 	this.systems.finalizeMove();
 	
 	
@@ -456,25 +474,62 @@ Game.prototype.render = function() {
 	gl.enable(gl.BLEND);
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 	
+	this.vp = mat4.create();
+	
 	var scrollSpeed = 0.05;
+	var u = {x:0, y:0, acc: 6};
 	
 	var ii = this.input;
 	if(ii.down[37]) {
 		//console.log(ii);
-		this.cameraCenter[0] += scrollSpeed;
+// 		this.cameraCenter[0] += scrollSpeed;
+		u.x = -1;
 	}
 	if(ii.down[39]) {
 		//console.log(ii);
-		this.cameraCenter[0] += -scrollSpeed;
+// 		this.cameraCenter[0] += -scrollSpeed;
+		u.x = 1;
 	}
 	if(ii.down[38]) {
 		//console.log(ii);
-		this.cameraCenter[1] += -scrollSpeed;
+// 		this.cameraCenter[1] += -scrollSpeed;
+		u.y = 1;
 	}
 	if(ii.down[40]) {
 		//console.log(ii);
-		this.cameraCenter[1] += scrollSpeed;
+// 		this.cameraCenter[1] += scrollSpeed;
+		u.y = -1;
 	}
+	
+	if(ii.down[90]) { // z
+// 		this.scale += 0.0003;
+		this.cameraCenter[2] += 1;
+	}
+	if(ii.down[88]) { // x
+// 		this.scale -= 0.0003;
+		this.cameraCenter[2] -= 1;
+	}
+	this.scale = Math.max(0.001, this.scale);
+	this.scale = Math.min(1000.1, this.scale);
+	
+//  	var len = Math.hypot(u.x, u.y);
+//  	u.x = u.x / len; 
+// 	u.y = u.y / len; 
+	this.components.urge[this.followEID] = u;
+	
+	
+	var pos = this.components.position[this.followEID];
+	
+	var follow = vec4.fromValues(pos.x, pos.y, 0, 1);
+	
+
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
@@ -483,14 +538,38 @@ Game.prototype.render = function() {
 	
 	
 	this.m_view = mat4.create();
-	
-	mat4.scale(this.m_view, this.m_view, [this.scale, this.scale, this.scale]);
+	//console.log(this.m_view);
+//	mat4.scale(this.m_view, this.m_view, [this.scale, this.scale, this.scale]);
 	mat4.translate(this.m_view, this.m_view, this.cameraCenter);
 	
-	this.vp = mat4.create();
 	
 	
- 	mat4.mul(this.vp, this.m_proj, this.m_view);
+	
+	mat4.mul(this.vp, this.m_proj, this.m_view);
+	
+
+	var ff = vec4.create();
+	vec4.transformMat4(ff, follow, this.vp);
+	
+	// perspective divide
+	ff[0] /= ff[3];
+	ff[1] /= ff[3];
+	ff[2] /= ff[3];
+	
+	if(ff[0] < -.8) {
+		this.cameraCenter[0] += 0.5;
+	}
+	else if(ff[0] > .8) {
+		this.cameraCenter[0] += -0.5;
+	}
+	
+	if(ff[1] < -.8) {
+		this.cameraCenter[1] += 0.5;
+	}
+	else if(ff[1] > .8) {
+		this.cameraCenter[1] += -0.5;
+	}
+	
 	
 	this.terrain.render(this);
 	this.activeSprites.render(this);

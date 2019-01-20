@@ -31,7 +31,7 @@ void main() {
 	float v = float(gl_VertexID) / 6.0;
 	float f = v / (64.0);
 	float f2 = mod(v, (64.0));
-	tile_uv =  ivec3(f,f2, 0);
+	tile_uv =  ivec3(f2,f, 0);
  	vec2 tex_vs2 = vec2(tile_uv.xy) / vec2(64.0, 64.0);
 	
 // 	tile_uv = ivec3(1,0,1);
